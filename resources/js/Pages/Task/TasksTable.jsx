@@ -5,7 +5,10 @@ import TextInput from '@/Components/TextInput';
 import SelectInput from '@/Components/SelectInput';
 import { router } from '@inertiajs/react';
 
-export default function TasksTable({ tasks, queryParams }) {
+export default function TasksTable({ tasks, queryParams, displayProjectName = true }) {
+
+    queryParams = queryParams || {};
+
     const searchFieldChanged = (name, value) => {
         if (value) {
             queryParams[name] = value;
@@ -45,9 +48,9 @@ export default function TasksTable({ tasks, queryParams }) {
                                         <th>
                                             IMAGE
                                         </th>
-                                        <th>
+                                        {displayProjectName && <th>
                                             PROJECT NAME
-                                        </th>
+                                        </th>}
                                         <th className='cursor-pointer' onClick={e => sortChanged('name')}>
                                             <TableHeading bySort="name" queryParams={queryParams}>NAME</TableHeading>
                                         </th>
@@ -72,9 +75,7 @@ export default function TasksTable({ tasks, queryParams }) {
                                             
                                         </th>
                                         <th className="p-3"></th>
-                                        <th className="p-3">
-                                            
-                                        </th>
+                                        {displayProjectName && <th className="p-3"></th>}
                                         <th className="p-3">
                                             <TextInput 
                                                 placeholder="Search Task Name"
@@ -113,7 +114,7 @@ export default function TasksTable({ tasks, queryParams }) {
                                             <td className="p-3">
                                                 <img src={task.image_path} alt={task.name} className="h-10 w-10 rounded-full" />
                                             </td>
-                                            <td className="p-3 max-w-48 text-gray-400">{task.project.name}</td>
+                                            {displayProjectName && <td className="p-3">{task.project.name}</td>}
                                             <td className="p-3 max-w-48 font-extrabold">{task.name}</td>
                                             <td>
                                                 <div className={"p-1 text-center rounded-md justify-center " + TASK_STATUS_CLASS_MAP[task.status]}>
