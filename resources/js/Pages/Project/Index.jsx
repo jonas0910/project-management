@@ -6,6 +6,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import TableHeading from "@/Components/TableHeading";
 import PrimaryButton from "@/Components/PrimaryButton";
+import { useForm } from "@inertiajs/react";
 
 
 export default function Index({ auth, projects, queryParams=null }) {
@@ -38,6 +39,18 @@ export default function Index({ auth, projects, queryParams=null }) {
 
         router.get(route('project.index', queryParams));
     }
+
+    
+    const { delete: deleteProject } = useForm();
+
+    const handleDelete = (projectId) => {
+        if (confirm('Are you sure you want to delete this project?')) {
+            deleteProject(route('project.destroy', projectId));
+        }
+    };
+
+
+   
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -128,11 +141,9 @@ export default function Index({ auth, projects, queryParams=null }) {
                                                     "project.edit", project.id)
                                                 }
                                                 className="text-blue-600 mx-1 hover:text-indigo-900">Edit</Link>
-                                                <Link href={route(
-                                                    "project.destroy", project.id)
-                                                }
-                                                className="text-red-600 mx-1text-indigo-600 hover:text-indigo-900">Delete</Link>
-                                                
+                                                <button onClick={e=>handleDelete(project.id)} className="text-red-600 mx-1 hover:text-indigo-900">
+                                                    Delete
+                                                </button>
                                                 <Link href={route(
                                                     "project.show", project.id)
                                                 }

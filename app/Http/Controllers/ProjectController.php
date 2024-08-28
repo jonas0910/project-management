@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
+use App\Http\Resources\TaskResource;
 
 class ProjectController extends Controller
 {
@@ -66,9 +67,31 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-       
+        $query= $project->tasks();
+
+        $sortField = request("sort_field", 'created_at');
+        $sortDirection = request("sort_direction", 'desc');
+
+        if(request("status")){
+            if(request("status") != "all")
+                $query->where("status", request("status"));
+        }
+
+        if(request("name")){
+            $query->where("name", "like", "%".request("name")."%");
+        }
+        if(request("sort") && request("direction")){
+            $sortField = request("sort");
+            $sortDirection = request("direction");
+        }
+
+        $tasks = $query->with('project')->orderBy($sortField,$sortDirection)->paginate(10)->onEachSide(2);
+
+
         return inertia('Project/Show', [
-            'project' => new ProjectResource($project)
+            'project' => new ProjectResource($project),
+            'tasks' => TaskResource::collection($tasks),
+            'queryParams' => request()->query() ? : null,
         ]);
     }
 
@@ -77,7 +100,9 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        //
+        return inertia('Project/Edit', [
+            'project' => new ProjectResource($project)
+        ]);
     }
 
     /**
@@ -93,6 +118,8 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        $project->tasks()->delete();
+        $project->delete();
+        return redirect()->route('project.index')->with('success', 'Project deleted successfully');      
     }
 }

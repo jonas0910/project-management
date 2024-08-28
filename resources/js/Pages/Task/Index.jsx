@@ -8,7 +8,7 @@ import {router} from '@inertiajs/react';
 
 
 export default function index({ auth, tasks, queryParams=null }) {
-    queryParams = queryParams || {};
+    
     
     
     return (
@@ -25,7 +25,7 @@ export default function index({ auth, tasks, queryParams=null }) {
                 </PrimaryButton>
             </h2>}>
             <Head title="TasAks" />
-            <TasksTable tasks={tasks} queryParams={queryParams} />
+            <TasksTable tasks={tasks} queryParams={queryParams} displayProjectName={true}/>
         </AuthenticatedLayout>
     );
 }
