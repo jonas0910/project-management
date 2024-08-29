@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskResource;
+use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
@@ -38,9 +39,8 @@ class ProjectController extends Controller
         $projects = $query
         ->orderBy($sortField, $sortDirection)
         ->paginate(10)->onEachSide(2);
-
+ 
         return inertia('Project/Index', [
-            //"projects" => ProjectResource::collection($projects),
             "projects" => ProjectResource::collection($projects),
             "queryParams" => request()->query() ? : null,
         ]);
@@ -51,18 +51,29 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('Project/Create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProjectRequest $request)
-    {
-        //
-    }
+        public function store(StoreProjectRequest $request)
+        {
+            $data = $request->validated();
+            $data['created_by'] = auth()->id();
+            $data['updated_by'] = auth()->id();
 
-    /**
+            $image = $data['image'] ?? null;
+            if($image){
+                $data['image_path'] = $image->store('project/'.Str::random(), 'public');
+            }
+            
+            $project = Project::create($data);
+            return to_route('project.index')->with('success','Project was created');
+
+        }
+
+     /**
      * Display the specified resource.
      */
     public function show(Project $project)
