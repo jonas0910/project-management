@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskResource;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -57,21 +58,21 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-        public function store(StoreProjectRequest $request)
-        {
-            $data = $request->validated();
-            $data['created_by'] = auth()->id();
-            $data['updated_by'] = auth()->id();
+    public function store(StoreProjectRequest $request)
+    {
+        $data = $request->validated();
+        $data['created_by'] = auth()->id();
+        $data['updated_by'] = auth()->id();
 
-            $image = $data['image'] ?? null;
-            if($image){
-                $data['image_path'] = $image->store('project/'.Str::random(), 'public');
-            }
+        $image = $data['image'] ?? null;
+        if($image){
             
-            $project = Project::create($data);
-            return to_route('project.index')->with('success','Project was created');
-
+            $data['image_path'] = $image->store('project/'.Str::random(), 'public');
         }
+        
+        $project = Project::create($data);
+        return to_route('project.index')->with('success','Project was created');
+    }
 
      /**
      * Display the specified resource.
@@ -121,7 +122,20 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        //
+        $data = $request->validated();
+        $data['updated_by'] = auth()->id();
+
+        $image = $data['image'] ?? null;
+        if($image){
+            if($project->image_path){
+                Storage::disk('public')->deleteDirectory(dirname($project->image_path));
+            }
+            $data['image_path'] = $image->store('project/'.Str::random(), 'public');
+        }
+
+        $project->update($data);
+        
+        return redirect()->route('project.index')->with('success', 'Project updated successfully');
     }
 
     /**
@@ -131,6 +145,10 @@ class ProjectController extends Controller
     {
         $project->tasks()->delete();
         $project->delete();
+
+        if($project->image_path){
+            Storage::disk('public')->deleteDirectory(dirname($project->image_path));
+        }
         return redirect()->route('project.index')->with('success', 'Project deleted successfully');      
     }
 }

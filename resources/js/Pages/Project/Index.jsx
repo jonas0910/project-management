@@ -7,6 +7,8 @@ import { Head, Link, router } from "@inertiajs/react";
 import TableHeading from "@/Components/TableHeading";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { useForm } from "@inertiajs/react";
+import Swal from "sweetalert2";
+
 
 
 export default function Index({ auth, projects, queryParams=null }) {
@@ -44,10 +46,27 @@ export default function Index({ auth, projects, queryParams=null }) {
     const { delete: deleteProject } = useForm();
 
     const handleDelete = (projectId) => {
-        if (confirm('Are you sure you want to delete this project?')) {
-            deleteProject(route('project.destroy', projectId));
-        }
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                title: "Deleted!",
+                text: "Your project has been deleted.",
+                icon: "success"
+              });
+              deleteProject(route('project.destroy', projectId));
+            }
+          });
     };
+
+    
 
 
    

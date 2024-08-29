@@ -28,7 +28,6 @@ class StoreProjectRequest extends FormRequest
             "description" => ["required", "string"],
             "status" => ["required", Rule::in(["pending", "in_progress", "completed"])],
             "due_date" => ["required", "string"],
-
         ];
     }
 }

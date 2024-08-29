@@ -1,12 +1,17 @@
-'use client'
+
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 
+import React, { useState } from 'react';
+
 import SelectInput from "@/Components/SelectInput";
 import TextAreaInput from "@/Components/TextAreaInput";
+
+import Swal from 'sweetalert2';
+
 
 export default function Create({ auth }) {
 
@@ -18,10 +23,28 @@ export default function Create({ auth }) {
         due_date:'',
     });
 
+    const [previewImage, setPreviewImage] = useState('');
+
     const onSubmit = (e) => {
         e.preventDefault();
-        console.log(data);
-        post(route("project.store"));
+        //TODO: deberia validar primero si el formulario es valido
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, save it!"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                title: "Saved!",
+                text: "Your project has been saved.",
+                icon: "success"
+              });
+              post(route("project.store"));
+            }
+          });   
     }
 
     return(
@@ -55,21 +78,6 @@ export default function Create({ auth }) {
                                     <InputError message={errors.name} />
                                 </div>
                                 <div className="my-10">
-                                    <InputLabel htmlFor="project_image_path" value="Project Image" />
-                                    <TextInput 
-                                        id="project_image_path"
-                                        type="file"
-                                        className="mt-1 block w-full"
-                                        name="project_image_path"
-                                        
-                                        onChange={(e) => setData('image', e.target.files[0])}
-                                    />
-                                    <InputError message={errors.image} />
-                                </div>
-                            </div>
-                            
-                            <div className="col-start-2 px-10">
-                                <div className="my-10">
                                     <InputLabel htmlFor="project_status" value="Project Status" />
                                     <SelectInput
                                         id="project_status"
@@ -96,6 +104,29 @@ export default function Create({ auth }) {
                                     />
                                     <InputError message={errors.due_date} />
                                 </div>
+                            </div>
+                            
+                            <div className="col-start-2 px-10">
+                                <div className="my-10">
+                                    <InputLabel htmlFor="project_image" value="Project Image" />
+                                    <input 
+                                        type="file"
+                                        id="project_image"
+                                        className="mt-1 block w-full"
+                                        name="project_image"
+                                        onChange={(e) => {
+                                            setData('image', e.target.files[0]);
+                                            setPreviewImage(URL.createObjectURL(e.target.files[0]));
+                                        }}
+                                    />
+                                    <img src={previewImage
+                                        ? previewImage
+                                        : './images/placeholder.svg'}
+                                        alt="Project Image"
+                                        className="mt-2 w-40 h-40 object-cover rounded-3xl"
+                                    />
+                                    <InputError message={errors.image} />
+                                </div>                                
                             </div>
                             
                         </div>
