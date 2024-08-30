@@ -70,7 +70,7 @@ class ProjectController extends Controller
             $data['image_path'] = $image->store('project/'.Str::random(), 'public');
         }
         
-        $project = Project::create($data);
+        Project::create($data);
         return to_route('project.index')->with('success','Project was created');
     }
 

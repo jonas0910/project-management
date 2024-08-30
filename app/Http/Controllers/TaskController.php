@@ -6,12 +6,17 @@ use App\Models\Task;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Models\Project;
+use App\Models\User;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    
     public function index()
     {
         $query = Task::query();
@@ -45,7 +50,12 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
+        $projects = Project::all();
+        $users = User::all();
+        return inertia('Task/Create', [
+            "projects" => $projects,
+            "users" => $users,
+        ]);
     }
 
     /**
@@ -53,7 +63,17 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        //
+        $data = $request->validated();
+        $data['created_by'] = auth()->id();
+        $data['updated_by'] = auth()->id();
+
+        $image = $data['image'] ?? null;
+        if($image){
+            $data['image_path'] = $image->store('task/'.Str::random(), 'public');
+        }
+        
+        Task::create($data);
+        return redirect()->route('task.index');
     }
 
     /**
@@ -61,7 +81,10 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        $task->load('project');
+        return inertia('Task/Show', [
+            "task" => new TaskResource($task),
+        ]);
     }
 
     /**
@@ -69,7 +92,15 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        $projects = Project::all();
+        $users = User::all();
+
+        $task->load('project');
+        return inertia('Task/Edit', [
+            "task" => new TaskResource($task),
+            "projects" => $projects,
+            "users" => $users,
+        ]);
     }
 
     /**
@@ -77,7 +108,20 @@ class TaskController extends Controller
      */
     public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        
+        $data = $request->validated();
+        $data['updated_by'] = auth()->id();
+
+        $image = $data['image'] ?? null;
+        if($image){
+            if($task->image_path){
+                Storage::disk('public')->deleteDirectory(dirname($task->image_path));
+            }
+            $data['image_path'] = $image->store('task/'.Str::random(), 'public');
+        }
+
+        $task->update($data);
+        return redirect()->route('task.index');
     }
 
     /**
@@ -85,6 +129,11 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        
+        if($task->image_path){
+            Storage::disk('public')->deleteDirectory(dirname($task->image_path));
+        }
+        $task->delete();
+        return redirect()->route('task.index');
     }
 }
