@@ -136,4 +136,33 @@ class TaskController extends Controller
         $task->delete();
         return redirect()->route('task.index');
     }
+
+    public function myTasks()
+    {
+        $query = Task::query();
+
+        $sortField = request("sort_field", 'created_at');
+        $sortDirection = request("sort_direction", 'desc');
+
+        if(request("status")){
+            if(request("status") != "all")
+                $query->where("status", request("status"));
+        }
+
+        if(request("name")){
+            $query->where("name", "like", "%".request("name")."%");
+        }
+        if(request("sort") && request("direction")){
+            $sortField = request("sort");
+            $sortDirection = request("direction");
+        }
+        
+        $tasks = $query->where('created_by', auth()->id())->with('project')->orderBy($sortField,$sortDirection)->paginate(10)->onEachSide(2);
+
+        
+        return inertia('Task/Index', [
+            "tasks" => TaskResource::collection($tasks),
+            "queryParams" => request()->query() ? : null,
+        ]);
+    }
 }
