@@ -3,7 +3,8 @@ import {  TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from '@/constants';
 import Pagination from '@/Components/Pagination';
 import TextInput from '@/Components/TextInput';
 import SelectInput from '@/Components/SelectInput';
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 
 export default function TasksTable({ tasks, queryParams, displayProjectName = true }) {
 
@@ -31,6 +32,27 @@ export default function TasksTable({ tasks, queryParams, displayProjectName = tr
         queryParams.sort = name;
         queryParams.direction = direction;
         router.get(route('task.index', queryParams));
+    }
+
+    const handleDelete = (taskId) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                title: "Deleted!",
+                text: "Your task has been deleted.",
+                icon: "success"
+              });
+              router.delete(route('task.destroy', taskId));
+            }
+          });
     }
 
     return (
@@ -125,7 +147,17 @@ export default function TasksTable({ tasks, queryParams, displayProjectName = tr
                                             <td className='p-3 text-center'>{task.due_date}</td>
                                             <td className="p-3">{task.created_by.name}</td>
                                             <td className="p-3">
-                                                <a href={route('task.show', task.id)} className="text-blue-500 hover:text-blue-700">View</a>
+                                                <Link href={route(
+                                                    "task.edit", task.id)
+                                                }
+                                                className="text-blue-600 mx-1 hover:text-indigo-900">Edit</Link>
+                                                <button onClick={e=>handleDelete(task.id)} className="text-red-600 mx-1 hover:text-indigo-900">
+                                                    Delete
+                                                </button>
+                                                <Link href={route(
+                                                    "task.show", task.id)
+                                                }
+                                                className="text-green-600 mx-1 hover:text-indigo-900">View</Link>
                                             </td>
                                         </tr>
                                     ))}
