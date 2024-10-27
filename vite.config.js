@@ -10,4 +10,7 @@ export default defineConfig({
         }),
         react(),
     ],
+    server: {
+        https: true, // Esto asegurará que el servidor de Vite sirva contenido a través de HTTPS
+    },
 });
