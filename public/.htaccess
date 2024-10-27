@@ -18,4 +18,8 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # Evitar redirección a HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ - [L]
 </IfModule>
